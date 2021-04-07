@@ -321,7 +321,8 @@ class Projn(events.EventListenerMixin, log.ObservableMixin):
                          self.pre.avg_m * self.spec.thr_l_mix * cos_diff_avg)
         mthr = (1 - self.spec.thr_l_mix * cos_diff_avg) * srm
         dwts = self.spec.lrate * xcal(sm_mix, lthr + mthr)
-        dwts[~self.mask] = 0
+        # comment otherwise does not learn
+        # dwts[~self.mask] = 0
 
         # Apply weights
         mask = dwts > 0
