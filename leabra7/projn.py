@@ -52,7 +52,7 @@ def expand_layer_mask_full(pre_mask: List[bool],
     """
     # In the full connectivity case, it can be concisely calculated with an
     # outer product
-    return torch.ger(torch.ByteTensor(post_mask), torch.ByteTensor(pre_mask))
+    return torch.outer(torch.ByteTensor(post_mask), torch.ByteTensor(pre_mask))
 
 
 def expand_layer_mask_one_to_one(pre_mask: List[bool],
@@ -284,8 +284,8 @@ class Projn(events.EventListenerMixin, log.ObservableMixin):
     def learn(self) -> None:
         """Updates weights with XCAL learning equation."""
         # Compute weight changes
-        srs = torch.ger(self.post.avg_s, self.pre.avg_s)
-        srm = torch.ger(self.post.avg_m, self.pre.avg_m)
+        srs = torch.outer(self.post.avg_s, self.pre.avg_s)
+        srm = torch.outer(self.post.avg_m, self.pre.avg_m)
         s_mix = 0.9
         sm_mix = s_mix * srs + (1 - s_mix) * srm
 
@@ -317,7 +317,7 @@ class Projn(events.EventListenerMixin, log.ObservableMixin):
                 lrate_mod = 1.0 - ((diff - diff_avg) / (hi_diff - diff_avg))
                 lrate_mod = hi_lrate + (1.0 - hi_lrate) * lrate_mod
 
-        lthr = torch.ger(self.post.avg_l,
+        lthr = torch.outer(self.post.avg_l,
                          self.pre.avg_m * self.spec.thr_l_mix * cos_diff_avg)
         mthr = (1 - self.spec.thr_l_mix * cos_diff_avg) * srm
         dwts = self.spec.lrate * xcal(sm_mix, lthr + mthr)
